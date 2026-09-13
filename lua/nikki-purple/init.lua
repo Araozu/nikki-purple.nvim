@@ -16,6 +16,25 @@ local function resolve_style(style)
   return style
 end
 
+local function hex_to_rgb(hex)
+  return {
+    tonumber(hex:sub(2, 3), 16),
+    tonumber(hex:sub(4, 5), 16),
+    tonumber(hex:sub(6, 7), 16),
+  }
+end
+
+local function blend(color1, color2, weight)
+  weight = weight or 0.5
+  local rgb1 = hex_to_rgb(color1)
+  local rgb2 = hex_to_rgb(color2)
+  local out = {}
+  for i = 1, 3 do
+    out[i] = math.floor(rgb1[i] * weight + rgb2[i] * (1 - weight))
+  end
+  return string.format("#%02x%02x%02x", out[1], out[2], out[3])
+end
+
 local function apply_highlights(c)
   local highlights = {
     -- Editor UI
@@ -179,10 +198,98 @@ local function apply_highlights(c)
     NeoTreeGitDeleted = { fg = c.red },
     OilDir = { fg = c.blue },
     OilFile = { fg = c.fg },
+
+    -- Markdown (legacy vim syntax)
+    mkdCodeDelimiter = { fg = c.muted },
+    mkdCodeStart = { fg = c.blue },
+    mkdCodeEnd = { fg = c.blue },
+    markdownHeadingDelimiter = { fg = c.muted },
+    markdownCode = { fg = c.cyan },
+    markdownCodeBlock = { fg = c.cyan },
+    markdownH1 = { fg = c.orange, bold = true },
+    markdownH2 = { fg = c.cyan, bold = true },
+    markdownH3 = { fg = c.blue, bold = true },
+    markdownH4 = { fg = c.purple, bold = true },
+    markdownH5 = { fg = c.pink, bold = true },
+    markdownH6 = { fg = c.green, bold = true },
+    markdownLinkText = { fg = c.blue, underline = true },
+
+    -- render-markdown.nvim
+    RenderMarkdownH1 = { fg = c.orange, bold = true },
+    RenderMarkdownH2 = { fg = c.cyan, bold = true },
+    RenderMarkdownH3 = { fg = c.blue, bold = true },
+    RenderMarkdownH4 = { fg = c.purple, bold = true },
+    RenderMarkdownH5 = { fg = c.pink, bold = true },
+    RenderMarkdownH6 = { fg = c.green, bold = true },
+    RenderMarkdownH1Bg = { bg = blend(c.bg, c.orange, 0.85) },
+    RenderMarkdownH2Bg = { bg = blend(c.bg, c.cyan, 0.85) },
+    RenderMarkdownH3Bg = { bg = blend(c.bg, c.blue, 0.85) },
+    RenderMarkdownH4Bg = { bg = blend(c.bg, c.purple, 0.85) },
+    RenderMarkdownH5Bg = { bg = blend(c.bg, c.pink, 0.85) },
+    RenderMarkdownH6Bg = { bg = blend(c.bg, c.green, 0.85) },
+    RenderMarkdownQuote = { fg = c.muted },
+    RenderMarkdownQuote1 = { fg = blend(c.muted, c.bg, 0.9) },
+    RenderMarkdownQuote2 = { fg = blend(c.muted, c.bg, 0.8) },
+    RenderMarkdownQuote3 = { fg = blend(c.muted, c.bg, 0.7) },
+    RenderMarkdownQuote4 = { fg = blend(c.muted, c.bg, 0.6) },
+    RenderMarkdownQuote5 = { fg = blend(c.muted, c.bg, 0.5) },
+    RenderMarkdownQuote6 = { fg = blend(c.muted, c.bg, 0.4) },
+    RenderMarkdownCode = { bg = c.bg_alt },
+    RenderMarkdownBullet = { fg = c.muted },
+    RenderMarkdownDash = { fg = c.muted },
+    RenderMarkdownLink = { fg = c.cyan },
+    RenderMarkdownMath = { fg = c.violet },
+    RenderMarkdownTodo = { fg = c.orange },
+    RenderMarkdownTableHead = { fg = c.muted },
+    RenderMarkdownTableRow = { fg = blend(c.muted, c.bg, 0.7) },
+    RenderMarkdownTableFill = { link = "Conceal" },
+    RenderMarkdownSuccess = { fg = c.green },
+    RenderMarkdownInfo = { fg = c.blue },
+    RenderMarkdownHint = { fg = c.cyan },
+    RenderMarkdownWarn = { fg = c.orange },
+    RenderMarkdownError = { fg = c.red },
+
+    -- markview.nvim
+    MarkviewHeading1 = { fg = c.orange, bg = blend(c.bg, c.orange, 0.8), bold = true },
+    MarkviewHeading2 = { fg = c.cyan, bg = blend(c.bg, c.cyan, 0.8), bold = true },
+    MarkviewHeading3 = { fg = c.blue, bg = blend(c.bg, c.blue, 0.8), bold = true },
+    MarkviewHeading4 = { fg = c.purple, bg = blend(c.bg, c.purple, 0.8), bold = true },
+    MarkviewHeading5 = { fg = c.pink, bg = blend(c.bg, c.pink, 0.8), bold = true },
+    MarkviewHeading6 = { fg = c.green, bg = blend(c.bg, c.green, 0.8), bold = true },
+    MarkviewHeading1Sign = { fg = c.orange },
+    MarkviewHeading2Sign = { fg = c.cyan },
+    MarkviewHeading3Sign = { fg = c.blue },
+    MarkviewHeading4Sign = { fg = c.purple },
+    MarkviewHeading5Sign = { fg = c.pink },
+    MarkviewHeading6Sign = { fg = c.green },
+    MarkviewBlockQuoteDefault = { link = "Comment" },
+    MarkviewBlockQuoteOk = { fg = c.green },
+    MarkviewBlockQuoteWarn = { fg = c.yellow },
+    MarkviewBlockQuoteError = { fg = c.red },
+    MarkviewBlockQuoteNote = { fg = c.blue },
+    MarkviewBlockQuoteSpecial = { fg = c.cyan },
+    MarkviewCode = { bg = blend(c.bg_alt, c.surface_alt, 0.8) },
+    MarkviewInlineCode = { fg = c.pink, bg = blend(c.bg_alt, c.surface_alt, 0.8) },
+    MarkviewTableBorder = { fg = c.surface_alt },
+    MarkviewTableAlignLeft = { fg = c.green },
+    MarkviewTableAlignCenter = { fg = c.blue },
+    MarkviewTableAlignRight = { fg = c.purple },
+
+    -- helpview.nvim (same codeblock treatment)
+    HelpviewCode = { bg = c.bg_alt },
+    HelpviewInlineCode = { link = "HelpviewCode" },
+    HelpviewCodeLanguage = { fg = c.muted, bg = c.bg_alt, italic = true },
+
+    Italic = { italic = true },
+    Bold = { bold = true },
   }
 
   for group, spec in pairs(highlights) do
     vim.api.nvim_set_hl(0, group, spec)
+  end
+
+  for i = 1, 10 do
+    vim.api.nvim_set_hl(0, "MarkviewGradient" .. i, { fg = blend(c.muted, c.bg, i / 10) })
   end
 
   local treesitter_links = {
@@ -237,7 +344,21 @@ local function apply_highlights(c)
     ["@variable.parameter"] = "Parameter",
     ["@variable.parameter.builtin"] = "Parameter",
     ["@markup.heading"] = "Title",
+    ["@markup.heading.1"] = "markdownH1",
+    ["@markup.heading.2"] = "markdownH2",
+    ["@markup.heading.3"] = "markdownH3",
+    ["@markup.heading.4"] = "markdownH4",
+    ["@markup.heading.5"] = "markdownH5",
+    ["@markup.heading.6"] = "markdownH6",
+    ["@markup.italic"] = "Italic",
     ["@markup.link"] = "Underlined",
+    ["@markup.link.label.markdown_inline"] = "RenderMarkdownLink",
+    ["@markup.link.markdown_inline"] = "markdownLinkText",
+    ["@markup.link.url"] = "Underlined",
+    ["@markup.list.checked"] = "DiagnosticOk",
+    ["@markup.list.unchecked"] = "Todo",
+    ["@markup.quote"] = "Comment",
+    ["@markup.strong"] = "Bold",
     ["@markup.raw"] = "String",
   }
 
